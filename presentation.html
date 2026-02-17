@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Product Advisor – Présentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --text: #1a1d21;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    .deck {
+      position: relative;
+    }
+    .slide {
+      min-height: 100vh;
+      padding: 2rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+    .slide.active {
+      display: flex;
+    }
+    .slide:not(.active) {
+      display: none;
+    }
+    .slide h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+      color: var(--text);
+    }
+    .slide h2 {
+      font-size: clamp(1.25rem, 3vw, 1.5rem);
+      font-weight: 600;
+      margin: 0 0 1.5rem;
+      color: var(--accent);
+    }
+    .slide .subtitle {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin: 0.5rem 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      text-align: left;
+    }
+    .card pre {
+      margin: 0;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+    .slide ul {
+      text-align: left;
+      max-width: 520px;
+      margin: 0 auto 1rem;
+      padding-left: 1.5rem;
+    }
+    .slide ul li { margin-bottom: 0.5rem; }
+    .slide .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      max-width: 900px;
+      margin: 1rem auto;
+      width: 100%;
+    }
+    .slide .cards .card {
+      text-align: left;
+      margin: 0;
+    }
+    .slide .cards .card strong { color: var(--accent); }
+    .table-wrap {
+      overflow-x: auto;
+      max-width: 100%;
+      margin: 1rem auto;
+    }
+    table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 0.6rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    tr:last-child td { border-bottom: none; }
+    .tree {
+      text-align: left;
+      max-width: 420px;
+      margin: 0 auto;
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .nav {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.75rem;
+      z-index: 10;
+    }
+    .nav button {
+      font-family: inherit;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      transition: background 0.2s;
+    }
+    .nav button:hover {
+      background: var(--accent-hover);
+    }
+    .nav button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .nav button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .slide-indicator {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.35rem;
+      z-index: 9;
+    }
+    .slide-indicator span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .slide-indicator span.active {
+      background: var(--accent);
+    }
+    @media (max-width: 640px) {
+      .slide { padding: 1.5rem 1rem; }
+      .slide h1 { font-size: 1.75rem; }
+      .slide .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <section class="slide active" id="slide-1" aria-hidden="false">
+      <h1>AI Product Advisor</h1>
+      <p class="subtitle">Application web qui centralise les avis clients, analyse automatiquement le sentiment (IA) et propose des recommandations d’amélioration à partir des retours négatifs.</p>
+    </section>
+
+    <section class="slide" id="slide-2" aria-hidden="true">
+      <h2>Stack</h2>
+      <ul>
+        <li><strong>Frontend</strong> : React (Vite), CSS, Axios, Chart.js, React Router</li>
+        <li><strong>Backend</strong> : Python, Flask, Flask-CORS, SQLAlchemy</li>
+        <li><strong>Base de données</strong> : SQLite</li>
+        <li><strong>IA</strong> : Hugging Face Transformers (analyse de sentiment, modèle <code>cardiffnlp/twitter-roberta-base-sentiment-latest</code>)</li>
+      </ul>
+    </section>
+
+    <section class="slide" id="slide-3" aria-hidden="true">
+      <h2>Prérequis et lancement</h2>
+      <p style="margin-bottom: 1rem;">Python 3.10+ · Node.js 18+ · npm ou yarn</p>
+      <div class="cards">
+        <div class="card">
+          <strong>Backend</strong>
+          <pre>cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py</pre>
+          <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--muted);">API → http://localhost:5000</p>
+        </div>
+        <div class="card">
+          <strong>Frontend</strong>
+          <pre>cd frontend
+npm install
+npm run dev</pre>
+          <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--muted);">App → http://localhost:5173</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-4" aria-hidden="true">
+      <h2>API REST</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Méthode</th>
+              <th>URL</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td><code>/api/products</code></td><td>Liste des produits</td></tr>
+            <tr><td>POST</td><td><code>/api/products</code></td><td>Créer un produit (body: name, category)</td></tr>
+            <tr><td>GET</td><td><code>/api/products/:id</code></td><td>Détail d’un produit</td></tr>
+            <tr><td>PUT</td><td><code>/api/products/:id</code></td><td>Modifier un produit</td></tr>
+            <tr><td>DELETE</td><td><code>/api/products/:id</code></td><td>Supprimer un produit</td></tr>
+            <tr><td>GET</td><td><code>/api/products/:id/reviews</code></td><td>Liste des avis du produit</td></tr>
+            <tr><td>POST</td><td><code>/api/products/:id/reviews</code></td><td>Ajouter un avis (text, rating 1–5) — sentiment IA auto</td></tr>
+            <tr><td>GET</td><td><code>/api/products/:id/stats</code></td><td>Statistiques (nb avis, sentiment, moyenne)</td></tr>
+            <tr><td>GET</td><td><code>/api/products/:id/recommendations</code></td><td>Recommandations (avis négatifs)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-5" aria-hidden="true">
+      <h2>Fonctionnalités</h2>
+      <div class="cards">
+        <div class="card">
+          <strong>Produits</strong>
+          <p style="margin: 0.25rem 0 0;">Liste, création, suppression, modification (optionnel).</p>
+        </div>
+        <div class="card">
+          <strong>Avis</strong>
+          <p style="margin: 0.25rem 0 0;">Texte + note 1–5 ; sentiment (positif / neutre / négatif) et score de confiance calculés par l’IA.</p>
+        </div>
+        <div class="card">
+          <strong>Statistiques</strong>
+          <p style="margin: 0.25rem 0 0;">Nombre d’avis, répartition des sentiments, moyenne des notes, graphiques (camembert + barres).</p>
+        </div>
+        <div class="card">
+          <strong>Recommandations</strong>
+          <p style="margin: 0.25rem 0 0;">Résumé des retours négatifs, points faibles récurrents, 3 à 5 actions recommandées.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-6" aria-hidden="true">
+      <h2>Structure du projet</h2>
+      <div class="tree">Projet/
+├── backend/
+│   ├── app.py
+│   ├── config.py
+│   ├── extensions.py
+│   ├── models/       (Product, Review)
+│   ├── routes/       (products, reviews, stats)
+│   ├── services/     (sentiment IA, recommandations)
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── api.js
+│   │   ├── pages/
+│   │   ├── components/
+│   │   └── App.jsx
+│   └── package.json
+└── README.md</div>
+    </section>
+
+    <section class="slide" id="slide-7" aria-hidden="true">
+      <h2>Base de données (SQLite)</h2>
+      <div class="cards">
+        <div class="card">
+          <strong>products</strong>
+          <p style="margin: 0.25rem 0 0; font-size: 0.95rem;"><code>id</code>, <code>name</code>, <code>category</code>, <code>created_at</code></p>
+        </div>
+        <div class="card">
+          <strong>reviews</strong>
+          <p style="margin: 0.25rem 0 0; font-size: 0.95rem;"><code>id</code>, <code>product_id</code>, <code>text</code>, <code>rating</code>, <code>sentiment</code>, <code>sentiment_score</code>, <code>created_at</code></p>
+        </div>
+      </div>
+      <p style="margin-top: 1rem; color: var(--muted); font-size: 0.95rem;">Fichier créé automatiquement : <code>backend/ai_product_advisor.db</code></p>
+    </section>
+
+    <section class="slide" id="slide-8" aria-hidden="true">
+      <h1>Merci</h1>
+      <p class="subtitle">Questions ?</p>
+    </section>
+  </div>
+
+  <div class="slide-indicator" aria-hidden="true">
+    <span class="active" data-i="0"></span>
+    <span data-i="1"></span>
+    <span data-i="2"></span>
+    <span data-i="3"></span>
+    <span data-i="4"></span>
+    <span data-i="5"></span>
+    <span data-i="6"></span>
+    <span data-i="7"></span>
+  </div>
+
+  <nav class="nav" aria-label="Navigation du diaporama">
+    <button type="button" id="btn-prev" aria-label="Slide précédent">Précédent</button>
+    <button type="button" id="btn-next" aria-label="Slide suivant">Suivant</button>
+  </nav>
+
+  <script>
+    (function() {
+      var slides = document.querySelectorAll('.slide');
+      var indicators = document.querySelectorAll('.slide-indicator span');
+      var btnPrev = document.getElementById('btn-prev');
+      var btnNext = document.getElementById('btn-next');
+      var total = slides.length;
+      var current = 0;
+
+      function goTo(i) {
+        if (i < 0 || i >= total) return;
+        current = i;
+        slides.forEach(function(s, idx) {
+          var active = idx === current;
+          s.classList.toggle('active', active);
+          s.setAttribute('aria-hidden', !active);
+        });
+        indicators.forEach(function(ind, idx) {
+          ind.classList.toggle('active', idx === current);
+        });
+        btnPrev.disabled = current === 0;
+        btnNext.disabled = current === total - 1;
+      }
+
+      btnPrev.addEventListener('click', function() { goTo(current - 1); });
+      btnNext.addEventListener('click', function() { goTo(current + 1); });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') { goTo(current - 1); e.preventDefault(); }
+        if (e.key === 'ArrowRight') { goTo(current + 1); e.preventDefault(); }
+      });
+
+      goTo(0);
+    })();
+  </script>
+</body>
+</html>
