@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { productsApi } from "../api";
 import ProductForm from "../components/ProductForm";
 
-export default function ProductList() {
+export default function ProductList({ isAdmin = false }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -74,9 +74,15 @@ export default function ProductList() {
           products.map((p) => (
             <li key={p.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
               <div>
-                <Link to={`/products/${p.id}`} style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-                  {p.name}
-                </Link>
+                {isAdmin ? (
+                  <Link to={`/products/${p.id}`} style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                    {p.name}
+                  </Link>
+                ) : (
+                  <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                    {p.name}
+                  </span>
+                )}
                 <span style={{ color: "var(--text-muted)", marginLeft: "0.5rem" }}>
                   {p.category}
                 </span>

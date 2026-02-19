@@ -22,6 +22,7 @@ export default function ProductDetail() {
       const [prodRes, revRes, statsRes, recRes] = await Promise.all([
         productsApi.get(productId),
         reviewsApi.list(productId),
+
         statsApi.get(productId).catch(() => ({ data: null })),
         statsApi.recommendations(productId).catch(() => ({ data: null })),
       ]);

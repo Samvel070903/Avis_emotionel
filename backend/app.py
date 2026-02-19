@@ -15,10 +15,12 @@ def create_app(config_class=Config):
     with app.app_context():
         from models import Product, Review
         db.create_all()
-    from routes import products_bp, reviews_bp, stats_bp
+
+    from routes import products_bp, reviews_bp, stats_bp, auth_bp
     app.register_blueprint(products_bp, url_prefix="/api/products")
     app.register_blueprint(reviews_bp, url_prefix="/api/products")
     app.register_blueprint(stats_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
     return app
 
 
