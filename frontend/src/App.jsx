@@ -1,63 +1,52 @@
-import { useEffect, useState } from "react";
-import { Routes, Route, Link, Navigate } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Login from "./pages/Login";
 import "./App.css";
 
-function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        setUser(null);
-      }
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-  };
-
-  const isAdmin = user && user.username === "admin";
-
+function Nav() {
+  const { user, logout } = useAuth();
   return (
-    <div className="app">
-      <nav className="nav">
-        <Link to="/" className="brand">AI Product Advisor</Link>
-        <Link to="/">Produits</Link>
-        <div style={{ marginLeft: "auto", display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          {user ? (
-            <>
-              <span style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                Connecté en tant que <strong>{user.username}</strong>
-              </span>
-              <button type="button" className="btn" onClick={handleLogout}>
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            <Link to="/login">Connexion</Link>
-          )}
-        </div>
-      </nav>
-      <main className="main">
-        <Routes>
-          <Route path="/" element={<ProductList isAdmin={isAdmin} />} />
-          <Route
-            path="/products/:productId"
-            element={isAdmin ? <ProductDetail /> : <Navigate to="/" replace />}
-          />
-          <Route path="/login" element={<Login onLogin={setUser} />} />
-        </Routes>
-      </main>
-    </div>
+    <nav className="nav">
+      <Link to="/" className="brand">
+        Avis Émotionnel <span className="brand-sub">— Conseiller Produits IA</span>
+      </Link>
+      <Link to="/">Catalogue</Link>
+      <div className="nav-actions">
+        {user ? (
+          <>
+            <span className="nav-user">
+              Connecté : <strong>{user.username}</strong>
+            </span>
+            <button type="button" className="btn btn-soft" onClick={logout}>
+              Déconnexion
+            </button>
+          </>
+        ) : (
+          <Link to="/login" className="btn btn-primary" style={{ textDecoration: "none" }}>
+            Connexion
+          </Link>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <div className="app">
+        <Nav />
+        <main className="main">
+          <Routes>
+            <Route path="/" element={<ProductList />} />
+            <Route path="/products/:productId" element={<ProductDetail />} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
   );
 }
 

@@ -1,22 +1,16 @@
-"""Routes API pour statistiques et recommandations."""
+"""Routes API pour statistiques et recommandations (admin uniquement)."""
 from flask import Blueprint, jsonify
 from models import Product, Review
 from services.recommendation_service import get_recommendations
-from .auth import token_required
+from .auth import admin_required
 
 stats_bp = Blueprint("stats", __name__)
 
 
 @stats_bp.route("/products/<int:product_id>/stats", methods=["GET"])
-@token_required
+@admin_required
 def product_stats(current_user, product_id):
-    """GET /api/products/:id/stats - Statistiques d'un produit (nb avis, répartition sentiment, moyenne notes).
-
-    Accès réservé à l'admin (seul l'admin voit le score de positivité).
-    """
-    # Règle ultra simple : l'utilisateur dont le nom est "admin" est considéré comme admin.
-    if not current_user or current_user.username != "admin":
-        return jsonify({"error": "Accès réservé à l'admin."}), 403
+    """GET /api/products/:id/stats - Statistiques (admin)."""
     product = Product.query.get(product_id)
     if not product:
         return jsonify({"error": "Produit introuvable."}), 404
@@ -35,8 +29,9 @@ def product_stats(current_user, product_id):
 
 
 @stats_bp.route("/products/<int:product_id>/recommendations", methods=["GET"])
-def product_recommendations(product_id):
-    """GET /api/products/:id/recommendations - Recommandations basées sur les avis négatifs."""
+@admin_required
+def product_recommendations(current_user, product_id):
+    """GET /api/products/:id/recommendations - Recommandations (admin)."""
     product = Product.query.get(product_id)
     if not product:
         return jsonify({"error": "Produit introuvable."}), 404

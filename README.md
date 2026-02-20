@@ -5,7 +5,7 @@ Application web qui centralise les avis clients, analyse automatiquement le sent
 ## Stack
 
 - **Frontend** : React (Vite), CSS, Axios, Chart.js, React Router
-- **Backend** : Python, Flask, Flask-CORS, SQLAlchemy
+- **Backend** : Python, Flask, Flask-CORS, SQLAlchemy, JWT (PyJWT)
 - **Base de données** : SQLite
 - **IA** : Hugging Face Transformers (analyse de sentiment, modèle `cardiffnlp/twitter-roberta-base-sentiment-latest`)
 
@@ -51,6 +51,21 @@ Pour pointer le frontend vers une autre URL d’API :
 VITE_API_URL=http://localhost:5000/api
 ```
 
+### Variables d’environnement backend (JWT)
+
+Deux variables peuvent être utilisées pour sécuriser la signature des tokens :
+
+- `SECRET_KEY` : clé secrète Flask (valeur de développement par défaut si non définie)
+- `JWT_KEY` : clé utilisée pour signer les JWT (si absente, c’est `SECRET_KEY` qui est utilisée)
+
+Exemple (Unix/macOS) :
+
+```bash
+export SECRET_KEY="change-me-super-secret"
+export JWT_KEY="change-me-even-more-secret"
+python app.py
+```
+
 ## API REST (endpoints principaux)
 
 | Méthode | URL | Description |
@@ -64,6 +79,39 @@ VITE_API_URL=http://localhost:5000/api
 | POST | `/api/products/:id/reviews` | Ajouter un avis (body: `text`, `rating` 1–5) — sentiment IA calculé automatiquement |
 | GET | `/api/products/:id/stats` | Statistiques (nb avis, répartition sentiment, moyenne notes) |
 | GET | `/api/products/:id/recommendations` | Recommandations basées sur les avis négatifs |
+
+### Authentification (JWT)
+
+Les utilisateurs peuvent se créer un compte et obtenir un token JWT pour accéder aux routes protégées.
+
+#### Endpoints d’authentification
+
+| Méthode | URL | Description |
+|--------|-----|-------------|
+| POST | `/api/auth/register` | Créer un utilisateur (body : `username`, `password`) |
+| POST | `/api/auth/login` | Se connecter et obtenir un token JWT (body : `username`, `password`) |
+
+Réponse typique de `/api/auth/login` :
+
+```json
+{
+	"token": "<jwt_token>",
+	"user": {
+		"id": 1,
+		"username": "demo"
+	}
+}
+```
+
+#### Utilisation du token
+
+Pour appeler une route protégée, ajouter l’en-tête HTTP suivant :
+
+```http
+Authorization: Bearer <jwt_token>
+```
+
+Le token est valable 24h à partir de la connexion.
 
 ## Fonctionnalités
 
@@ -80,8 +128,8 @@ Projet/
 │   ├── app.py              # Point d’entrée Flask
 │   ├── config.py           # Configuration
 │   ├── extensions.py       # SQLAlchemy
-│   ├── models/             # Product, Review
-│   ├── routes/             # API (products, reviews, stats)
+│   ├── models/             # Product, Review, User
+│   ├── routes/             # API (products, reviews, stats, auth)
 │   ├── services/           # Sentiment IA, recommandations
 │   └── requirements.txt
 ├── frontend/
@@ -98,5 +146,6 @@ Projet/
 
 - **products** : `id`, `name`, `category`, `created_at`
 - **reviews** : `id`, `product_id`, `text`, `rating`, `sentiment`, `sentiment_score`, `created_at`
+- **users** : `id`, `username`, `password_hash`
 
 Fichier créé automatiquement : `backend/ai_product_advisor.db`.

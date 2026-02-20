@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login({ onLogin }) {
+export default function Login() {
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -15,11 +17,7 @@ export default function Login({ onLogin }) {
     setLoading(true);
     try {
       const { data } = await authApi.login(username, password);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      if (onLogin) {
-        onLogin(data.user);
-      }
+      login(data.user, data.token);
       navigate("/");
     } catch (e) {
       setError(e.response?.data?.error || "Connexion impossible.");
@@ -29,42 +27,49 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="card" style={{ maxWidth: 400, margin: "2rem auto" }}>
-      <h1 className="page-title" style={{ textAlign: "center" }}>Connexion</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="username">Nom d'utilisateur</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+    <div className="login-page">
+      <div className="login-card card">
+        <div className="login-header">
+          <h1 className="page-title" style={{ marginBottom: "0.25rem" }}>Connexion</h1>
+          <p className="page-subtitle" style={{ marginBottom: "1.5rem" }}>
+            Accédez à l’administration des produits et des scores.
+          </p>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Mot de passe</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p className="error-msg" style={{ marginTop: "0.5rem" }}>{error}</p>}
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={loading}
-          style={{ marginTop: "1rem", width: "100%" }}
-        >
-          {loading ? "Connexion..." : "Se connecter"}
-        </button>
-        <p style={{ marginTop: "1rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-          Pour l'administration des scores, connectez-vous en tant qu'<strong>admin</strong>.
-        </p>
-      </form>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <label htmlFor="username">Nom d’utilisateur</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="ex. admin"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && <p className="error-msg">{error}</p>}
+          <button
+            type="submit"
+            className="btn btn-primary login-submit"
+            disabled={loading}
+          >
+            {loading ? "Connexion…" : "Se connecter"}
+          </button>
+          <p className="login-hint">
+            Pour l’administration, connectez-vous avec le compte <strong>admin</strong>.
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,13 +1,34 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { productsApi } from "../api";
+import { productsApi, isAdmin, getAssetUrl } from "../api";
+import { useAuth } from "../context/AuthContext";
 import ProductForm from "../components/ProductForm";
 
-export default function ProductList({ isAdmin = false }) {
+function ProductImage({ product }) {
+  const url = getAssetUrl(product.image_url || product.image);
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={product.name}
+        className="product-card-image"
+      />
+    );
+  }
+  return (
+    <div className="product-image-placeholder" aria-hidden>
+      <span role="img">📦</span>
+    </div>
+  );
+}
+
+export default function ProductList() {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const admin = isAdmin(user);
 
   const fetchProducts = async () => {
     try {
@@ -37,6 +58,7 @@ export default function ProductList({ isAdmin = false }) {
 
   const handleDelete = async (id, e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!window.confirm("Supprimer ce produit et tous ses avis ?")) return;
     try {
       await productsApi.delete(id);
@@ -46,58 +68,106 @@ export default function ProductList({ isAdmin = false }) {
     }
   };
 
-  if (loading) return <p className="card">Chargement…</p>;
-  if (error) return <p className="card error-msg">{error}</p>;
+  if (loading) {
+    return (
+      <div className="page-header">
+        <h1 className="page-title">Catalogue produits</h1>
+        <p className="page-subtitle">Chargement…</p>
+        <div className="loading-cards">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="product-card product-card-skeleton" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-header">
+        <h1 className="page-title">Catalogue produits</h1>
+        <div className="card" style={{ maxWidth: 480 }}>
+          <p className="error-msg">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h1 className="page-title">Produits</h1>
-      <div className="card">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Annuler" : "+ Ajouter un produit"}
-        </button>
-        {showForm && (
+    <div className="page-header">
+      <div className="page-header-top">
+        <div>
+          <h1 className="page-title">Catalogue produits</h1>
+          <p className="page-subtitle">
+            Parcourez les produits et consultez les avis analysés par l’IA.
+          </p>
+        </div>
+        {admin && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Annuler" : "+ Ajouter un produit"}
+          </button>
+        )}
+      </div>
+
+      {admin && showForm && (
+        <div className="card" style={{ marginBottom: "1.5rem" }}>
           <ProductForm
             onSubmit={handleCreate}
             onCancel={() => setShowForm(false)}
           />
-        )}
-      </div>
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {products.length === 0 ? (
-          <li className="card">Aucun produit. Ajoutez-en un pour commencer.</li>
-        ) : (
-          products.map((p) => (
-            <li key={p.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-              <div>
-                {isAdmin ? (
-                  <Link to={`/products/${p.id}`} style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-                    {p.name}
-                  </Link>
-                ) : (
-                  <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-                    {p.name}
-                  </span>
-                )}
-                <span style={{ color: "var(--text-muted)", marginLeft: "0.5rem" }}>
-                  {p.category}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={(e) => handleDelete(p.id, e)}
-              >
-                Supprimer
-              </button>
+        </div>
+      )}
+
+      {products.length === 0 ? (
+        <div className="card empty-state">
+          <p className="empty-state-icon">📋</p>
+          <p className="empty-state-title">Aucun produit</p>
+          <p className="empty-state-text">
+            {admin
+              ? "Ajoutez un produit pour commencer à collecter des avis et à afficher les analyses."
+              : "Aucun produit pour le moment."}
+          </p>
+          {admin && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowForm(true)}
+            >
+              + Ajouter un produit
+            </button>
+          )}
+        </div>
+      ) : (
+        <ul className="product-grid">
+          {products.map((p) => (
+            <li key={p.id} className="product-card-wrapper">
+              <Link to={`/products/${p.id}`} className="product-card">
+                <div className="product-card-media">
+                  <ProductImage product={p} />
+                </div>
+                <div className="product-card-body">
+                  <h2 className="product-card-title">{p.name}</h2>
+                  <span className="product-card-category">{p.category}</span>
+                </div>
+              </Link>
+              {admin && (
+                <button
+                  type="button"
+                  className="btn btn-danger product-card-delete"
+                  onClick={(e) => handleDelete(p.id, e)}
+                  title="Supprimer le produit"
+                >
+                  Supprimer
+                </button>
+              )}
             </li>
-          ))
-        )}
-      </ul>
-    </>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

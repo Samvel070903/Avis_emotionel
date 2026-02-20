@@ -2,20 +2,24 @@ export default function Recommendations({ data }) {
   if (!data) return null;
 
   return (
-    <>
-      <h2 style={{ margin: "0 0 1rem", fontSize: "1.2rem" }}>Recommandations d’amélioration</h2>
-      <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>{data.summary}</p>
+    <div className="recommendations">
+      <h2 className="card-title">Recommandations d’amélioration</h2>
+      {data.summary && (
+        <p className="recommendations-summary">{data.summary}</p>
+      )}
       {data.weak_points?.length > 0 && (
-        <p style={{ marginBottom: "1rem" }}>
+        <div className="recommendations-weak">
           <strong>Points faibles récurrents :</strong>{" "}
           {data.weak_points.join(", ")}
-        </p>
+        </div>
       )}
-      <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-        {(data.recommendations || []).map((rec, i) => (
-          <li key={i} style={{ marginBottom: "0.5rem" }}>{rec}</li>
-        ))}
-      </ul>
-    </>
+      {(data.recommendations || []).length > 0 && (
+        <ul className="recommendations-list">
+          {(data.recommendations || []).map((rec, i) => (
+            <li key={i}>{rec}</li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
