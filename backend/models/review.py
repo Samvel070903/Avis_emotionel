@@ -8,6 +8,7 @@ class Review(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)  # obligatoire pour nouveaux avis
     text = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)  # 1..5
     sentiment = db.Column(db.String(20), nullable=True)   # positif / neutre / négatif (IA)
@@ -18,6 +19,7 @@ class Review(db.Model):
         return {
             "id": self.id,
             "product_id": self.product_id,
+            "user_id": self.user_id,
             "text": self.text,
             "rating": self.rating,
             "sentiment": self.sentiment,

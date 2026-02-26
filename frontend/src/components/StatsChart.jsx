@@ -3,7 +3,11 @@ import { Pie, Bar } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
-const SENTIMENT_COLORS = { positif: "#22ff00", neutre: "#6b728081", négatif: "#ff0000" };
+const SENTIMENT_COLORS = {
+  positif: "#0d9488",
+  neutre: "#94a3b8",
+  négatif: "#dc2626",
+};
 
 export default function StatsChart({ stats }) {
   const dist = stats.sentiment_distribution || {};
@@ -42,26 +46,30 @@ export default function StatsChart({ stats }) {
   };
 
   return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
-        <div className="card" style={{ marginBottom: 0, textAlign: "center" }}>
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--primary)" }}>
-            {stats.total_reviews}
-          </div>
-          <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Total avis</div>
+    <div className="stats-chart">
+      <div className="stats-kpis">
+        <div className="stats-kpi">
+          <span className="stats-kpi-value">{stats.total_reviews}</span>
+          <span className="stats-kpi-label">Total avis</span>
         </div>
-        <div className="card" style={{ marginBottom: 0, textAlign: "center" }}>
-          <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-            {stats.average_rating?.toFixed(1) ?? "—"}
-          </div>
-          <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Moyenne des notes</div>
+        <div className="stats-kpi">
+          <span className="stats-kpi-value">
+            {stats.average_rating != null ? stats.average_rating.toFixed(1) : "—"}
+          </span>
+          <span className="stats-kpi-label">Moyenne des notes</span>
         </div>
       </div>
-      <div style={{ maxWidth: 320, margin: "0 auto 1rem" }}>
+      <div className="stats-pie-wrap">
         <Pie data={pieData} options={options} />
       </div>
-      <div style={{ maxHeight: 220 }}>
-        <Bar data={barData} options={{ ...options, scales: { y: { beginAtZero: true } } }} />
+      <div className="stats-bar-wrap">
+        <Bar
+          data={barData}
+          options={{
+            ...options,
+            scales: { y: { beginAtZero: true } },
+          }}
+        />
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export default function ReviewForm({ productId, onSuccess }) {
     e.preventDefault();
     setError("");
     if (!text.trim()) {
-      setError("Le texte de l'avis est obligatoire.");
+      setError("Le texte de l’avis est obligatoire.");
       return;
     }
     setLoading(true);
@@ -21,25 +21,25 @@ export default function ReviewForm({ productId, onSuccess }) {
       setRating(5);
       onSuccess();
     } catch (e) {
-      setError(e.response?.data?.error || "Erreur lors de l'ajout de l'avis.");
+      setError(e.response?.data?.error || "Erreur lors de l’ajout de l’avis.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="review-form">
       <div className="form-group">
         <label>Votre avis</label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Décrivez votre expérience…"
+          placeholder="Décrivez votre expérience avec ce produit…"
           disabled={loading}
         />
       </div>
       <div className="form-group">
-        <label>Note (1 à 5)</label>
+        <label>Note (1 à 5 étoiles)</label>
         <select
           value={rating}
           onChange={(e) => setRating(Number(e.target.value))}
@@ -50,7 +50,7 @@ export default function ReviewForm({ productId, onSuccess }) {
           ))}
         </select>
       </div>
-      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+      <p className="review-form-hint">
         L’analyse de sentiment (IA) est calculée automatiquement à l’envoi.
       </p>
       {error && <p className="error-msg">{error}</p>}
